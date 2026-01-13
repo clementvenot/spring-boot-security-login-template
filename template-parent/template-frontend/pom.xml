@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent POM: Inherits common configuration and dependency management -->
+    <parent>
+        <groupId>com.template</groupId>
+        <artifactId>template-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <!-- Module coordinates -->
+    <artifactId>template-frontend</artifactId>
+    <name>template-frontend</name>
+    <packaging>jar</packaging>
+
+    <!-- Module-specific properties -->
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <!-- Dependencies for frontend module -->
+    <dependencies>
+        <!-- Spring Boot Web Starter: Provides MVC, REST controllers, and embedded server -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Thymeleaf Starter: Enables server-side rendering of HTML templates -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- Shared DTO module -->
+        <dependency>
+            <groupId>com.template</groupId>
+            <artifactId>dto</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Spring Boot Test Starter: Provides testing utilities and frameworks -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- Build configuration -->
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin: Handles packaging and running the application -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

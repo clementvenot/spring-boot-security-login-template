@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Project coordinates -->
+	<groupId>com.template</groupId>
+	<artifactId>template-parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<!-- Project name -->
+  	<name>java maven spring boot parent multi module</name>
+
+    <!-- Declare sub-modules -->  
+    <modules>
+	    <module>template-backend</module>
+	    <module>template-frontend</module>
+	    <module>dto</module>
+    </modules>
+
+	<!-- Project properties -->
+	<properties>
+		<java.version>21</java.version>
+		<spring.boot.version>3.3.5</spring.boot.version>
+        <!-- Encoding settings -->		
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- Plugin versions -->		
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+		<spring.boot.maven.plugin.version>${spring.boot.version}</spring.boot.maven.plugin.version>
+	</properties>
+
+	<!-- Dependency Management: Import Spring Boot BOM for consistent dependency versions -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring.boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	 <!-- Maven Compiler Plugin: Ensures consistent Java version and encoding -->  
+	<build>
+		<pluginManagement>
+		<plugins>
+   			<!-- Maven Compiler Plugin: Ensures consistent Java version and encoding -->
+   			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven.compiler.plugin.version}</version>
+				<configuration>
+					<release>${java.version}</release>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+			
+  			<!-- Spring Boot Maven Plugin: Handles packaging and running Spring Boot apps -->
+  			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring.boot.maven.plugin.version}</version>
+			</plugin>
+		</plugins>
+		</pluginManagement>
+	</build>
+</project>
