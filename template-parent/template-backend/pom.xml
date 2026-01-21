@@ -22,8 +22,9 @@
     </properties>
 
     <!-- Dependencies for backend module -->
-    <dependencies>
-        <!-- Spring Boot Web Starter: Provides REST API and MVC support -->
+        <dependencies>
+
+        <!-- Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -35,45 +36,81 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Shared DTO module -->
+        <!-- DATA JPA (OBLIGATOIRE POUR UserRepository, Hibernate, Entities) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+
+		<!-- SECURITY (OBLIGATOIRE POUR AuthService, SecurityConfig) -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+
+        <!-- DTO MODULE EXTERNE -->
         <dependency>
             <groupId>com.template</groupId>
             <artifactId>dto</artifactId>
-            <version>${project.version}</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
-        <!-- H2 Database: In-memory database for development and testing -->
+        <!-- BASE DE DONNÉES H2 (dev) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Spring Boot Actuator: Provides health checks and metrics endpoints -->
+        <!-- ✔ MySQL si tu utilises MySQL -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ACTUATOR -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Micrometer Tracing with Brave: Enables distributed tracing -->
+        <!-- TRACING -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
 
-        <!-- Spring Boot Test Starter: Provides testing utilities and frameworks -->
+        <!-- ✔ LOMBOK (OBLIGATOIRE pour @Getter, @Setter, @NoArgsConstructor...) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        
+        
+		<dependency>
+		    <groupId>org.springdoc</groupId>
+		    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+		    <version>2.5.0</version> <!-- or latest -->
+		</dependency>
+
+
+        <!-- TESTS -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring REST Docs: Generates API documentation using MockMvc -->
         <dependency>
             <groupId>org.springframework.restdocs</groupId>
             <artifactId>spring-restdocs-mockmvc</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
 
@@ -88,3 +125,6 @@
         </plugins>
     </build>
 </project>
+
+
+
