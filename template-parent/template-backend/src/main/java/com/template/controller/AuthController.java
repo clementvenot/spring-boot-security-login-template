@@ -9,6 +9,7 @@ import com.template.dto.UserResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,7 +45,7 @@ public class AuthController {
             )
         }
     )
-    public UserResponseDTO register(@RequestBody RegisterRequestDTO dto) {
+    public UserResponseDTO register(@Valid @RequestBody RegisterRequestDTO dto) {
         return UserMapper.toDTO(service.register(dto));
     }
 
@@ -66,7 +67,7 @@ public class AuthController {
             )
         }
     )
-    public UserResponseDTO login(@RequestBody LoginRequestDTO dto) {
+    public UserResponseDTO login(@Valid @RequestBody LoginRequestDTO dto) {
         return UserMapper.toDTO(service.login(dto));
     }
 }

@@ -2,13 +2,16 @@ package com.template.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
-@Getter @Setter
+@Table(
+	name = "users",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_user_email", columnNames = "email")
+    }
+)
 @NoArgsConstructor @AllArgsConstructor
 public class User {
 
@@ -79,6 +82,4 @@ public class User {
 	public void setRoles(Set<String> roles) {
 		this.roles = roles;
 	}
-    
-    
 }
