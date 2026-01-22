@@ -42,11 +42,8 @@ public class JwtCookieAuthFilter extends OncePerRequestFilter {
                     );
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
-            } catch (Exception e) {
-                // token invalide/expiré: on laisse passer non authentifié
-            }
+            } catch (Exception e) {}
         }
-
         chain.doFilter(request, response);
     }
 
