@@ -1,17 +1,23 @@
 package com.template.security;
 
-import com.template.security.jwt.JwtService;
 import com.template.repository.UserRepository;
+import com.template.security.jwt.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 
 public class JwtCookieAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtCookieAuthFilter.class);
 
     private final JwtService jwt;
     private final UserRepository userRepo;
@@ -24,25 +30,39 @@ public class JwtCookieAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain chain) throws IOException, jakarta.servlet.ServletException {
+                                    FilterChain chain)
+            throws IOException, jakarta.servlet.ServletException {
 
         String token = resolveTokenFromCookies(request, "access_token");
-        if (StringUtils.hasText(token)) {
-            try {
-                String email = jwt.getSubject(token);
 
-                var user = userRepo.findByEmail(email).orElse(null);
-                if (user != null) {
-                    var auth = new UsernamePasswordAuthenticationToken(
-                            email,
-                            null,
-                            user.getRoles().stream().map(r -> "ROLE_" + r)
+        if (StringUtils.hasText(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                var jws = jwt.parse(token);
+
+                String email = jws.getBody().getSubject();
+                if (email != null) {
+                    var user = userRepo.findByEmail(email).orElse(null);
+                    if (user != null) {
+                        var authorities = user.getRoles().stream()
+                                .map(r -> "ROLE_" + r)
                                 .map(org.springframework.security.core.authority.SimpleGrantedAuthority::new)
-                                .toList()
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                                .toList();
+                        var auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    } else {
+                        logger.debug("Utilisateur introuvable pour l'email dans le token: {}", email);
+                    }
                 }
-            } catch (Exception e) {}
+            } catch (ExpiredJwtException e) {
+                // Token expire 
+                logger.debug("JWT expiré");
+            } catch (JwtException e) {
+                // token invalid
+                logger.debug("JWT invalide (signature/malformed/issuer/audience)", e);
+            } catch (Exception e) {
+                // Prudence 
+                logger.warn("Erreur inattendue pendant l'authentification JWT", e);
+            }
         }
         chain.doFilter(request, response);
     }
