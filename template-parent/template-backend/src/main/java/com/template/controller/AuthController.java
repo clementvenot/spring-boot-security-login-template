@@ -87,7 +87,7 @@ public class AuthController {
 
         ResponseCookie cookie = ResponseCookie.from("access_token", accessToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(false) //false for http, true for https
                 .path("/")
                 .maxAge(Duration.ofMinutes(15))
                 .sameSite("None")
@@ -125,7 +125,7 @@ public class AuthController {
                 .secure(false)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
 
         return ResponseEntity.noContent()
@@ -133,7 +133,6 @@ public class AuthController {
                 .build();
     }
     
-	
 	@PostMapping("/register")
 	@Operation(
 	    summary = "Register a new user",
@@ -150,6 +149,6 @@ public class AuthController {
 	public UserResponseDTO register(@Valid @RequestBody RegisterRequestDTO dto) {
 	    var user = service.register(dto);
 	    return UserMapper.toDTO(user);
-}
+	}
 
 }
