@@ -27,7 +27,6 @@ public class AuthService {
         if (repo.existsByEmail(email)) {
             throw new RuntimeException("Email déjà utilisé");
         }
-
         User user = new User();
         user.setEmail(email);
         user.setPassword(encoder.encode(dto.password()));
