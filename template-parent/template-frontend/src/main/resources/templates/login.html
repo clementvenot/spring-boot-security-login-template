@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Login</title>
+    <style>
+        :root { color-scheme: light dark; }
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+        main { max-width: 420px; margin: 0 auto; }
+        h1 { margin-bottom: .5rem; }
+        p.muted { color: #6b7280; margin-top: 0; }
+        form { display: grid; gap: .75rem; margin-top: 1rem; }
+        label { display: grid; gap: .35rem; }
+        input { padding: .6rem .75rem; font-size: 1rem; border: 1px solid #d1d5db; border-radius: .5rem; }
+        button { padding: .6rem .9rem; font-size: 1rem; border-radius: .5rem; border: 1px solid transparent; background: #2563eb; color: white; cursor: pointer; }
+        button:hover { background: #1d4ed8; }
+        .alert { padding: .6rem .8rem; border-radius: .5rem; border: 1px solid #f5c6cb; background: #fdecea; color: #611a15; }
+        .ok { padding: .6rem .8rem; border-radius: .5rem; border: 1px solid #84e1bc; background: #e6ffed; color: #03543f; }
+        .links { margin-top: .75rem; }
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Login</h1>
+    <p class="muted">Log in to access the secure area.</p>
+
+    <!-- Status messages -->
+    <div th:if="${param.registered}" class="ok">Registration successful. You can now log in.</div>
+    <div th:if="${param.required}" class="alert">Please log in to access this page.</div>
+    <div th:if="${param.logout}" class="ok">You have been logged out.</div>
+    <div th:if="${loginError}" class="alert" th:text="${loginError}">Invalid email or password.</div>
+
+    <!-- Login form -->
+    <form th:action="@{/login}" method="post" th:object="${form}">
+        <!-- If you enable Spring Security on the frontend, uncomment the line below -->
+        <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/> -->
+
+        <label>
+            Email
+            <input type="email" th:field="*{email}" placeholder="email@domain.com" autocomplete="username" required/>
+        </label>
+
+        <label>
+            Password
+            <input type="password" th:field="*{password}" placeholder="********" autocomplete="current-password" required/>
+        </label>
+
+        <button type="submit">Log in</button>
+    </form>
+
+    <div class="links">
+        <span>Don't have an account?</span>
+        <a th:href="@{/register}">Create an account</a>
+    </div>
+</main>
+</body>
+</html>
