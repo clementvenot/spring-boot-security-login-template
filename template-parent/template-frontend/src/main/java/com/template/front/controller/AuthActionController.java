@@ -55,7 +55,7 @@ public class AuthActionController {
 
             return "redirect:/secure";
         } catch (Exception e) {
-            model.addAttribute("loginError", "Email ou mot de passe invalide.");
+            model.addAttribute("loginError", "Email or password invalid.");
             return "login";
         }
     }
@@ -73,7 +73,7 @@ public class AuthActionController {
             model.addAttribute("registeredEmail", user.email());
             return "redirect:/login?registered";
         } catch (Exception e) {
-            model.addAttribute("registerError", "Inscription impossible (email déjà utilisé ?).");
+            model.addAttribute("registerError", "Registration failed (email already in use?).");
             return "register";
         }
     }
