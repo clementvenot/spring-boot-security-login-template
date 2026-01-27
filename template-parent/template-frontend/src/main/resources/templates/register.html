@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Sign Up</title>
+    <title th:text="#{page.register.title}">Sign Up</title>
 
     <style>
         :root { color-scheme: light dark; }
@@ -47,73 +47,95 @@
 
 <body>
 <main>
-    <h1>Sign Up</h1>
-    <p class="muted">Create your account to access the secure area.</p>
+    <!-- Liens de changement de langue -->
+    <nav style="margin:.5rem 0 1rem">
+        <a th:href="@{/register(lang=${'fr'})}">FR</a> |
+        <a th:href="@{/register(lang=${'en'})}">EN</a>
+    </nav>
 
-    <div th:if="${registerError}" class="alert" th:text="${registerError}">
-        Signup failed (email already used?).
-    </div>
+    <h1 th:text="#{page.register.title}">Sign Up</h1>
+    <p class="muted" th:text="#{page.register.subtitle}">
+        Create your account to access the secure area.
+    </p>
+    
+    <div th:if="${registerError}" class="alert" th:text="#{page.login.status.error}">
+			Signup failed (email already used?).  
+	</div>
 
     <form th:action="@{/register}" method="post" th:object="${form}" id="register-form">
 
         <div class="row">
             <label>
-                First name
-                <input type="text" th:field="*{firstName}" placeholder="John" required/>
+                <span th:text="#{page.register.firstname}">First name</span>
+                <input type="text"
+                       th:field="*{firstName}"
+                       th:placeholder="#{page.register.firstname.placeholder}"
+                       required/>
             </label>
+
             <label>
-                Last name
-                <input type="text" th:field="*{lastName}" placeholder="Doe" required/>
+                <span th:text="#{page.register.lastname}">Last name</span>
+                <input type="text"
+                       th:field="*{lastName}"
+                       th:placeholder="#{page.register.lastname.placeholder}"
+                       required/>
             </label>
         </div>
 
         <label>
-            Email
-            <input type="email" th:field="*{email}" placeholder="email@domain.com" autocomplete="email" required/>
+            <span th:text="#{page.register.email}">Email</span>
+            <input type="email"
+                   th:field="*{email}"
+                   th:placeholder="#{page.register.email.placeholder}"
+                   autocomplete="email"
+                   required/>
         </label>
 
         <label>
-            Password
+            <span th:text="#{page.register.password}">Password</span>
             <div class="input-with-toggle">
                 <input id="password"
                        type="password"
                        th:field="*{password}"
-                       placeholder="********"
+                       th:placeholder="#{page.register.password.placeholder}"
                        autocomplete="new-password"
                        required/>
                 <button type="button"
                         class="pw-toggle"
-                        aria-label="Afficher le mot de passe"
+                        aria-label="Show password"
                         aria-pressed="false"
                         onclick="togglePasswordIcon('password', this)">🙈</button>
             </div>
         </label>
 
         <label>
-            Confirm password
+            <span th:text="#{page.register.confirmpassword}">Confirm password</span>
             <div class="input-with-toggle">
                 <input id="confirmPassword"
                        name="confirmPassword"
                        type="password"
-                       placeholder="********"
+                       th:placeholder="#{page.register.confirmpassword.placeholder}"
                        autocomplete="new-password"
                        required/>
                 <button type="button"
                         class="pw-toggle"
-                        aria-label="Afficher le mot de passe"
+                        aria-label="Show password"
                         aria-pressed="false"
                         onclick="togglePasswordIcon('confirmPassword', this)">🙈</button>
             </div>
-            <span id="pwdHelp" class="error-text" aria-live="polite">
+            <span id="pwdHelp" class="error-text" th:text="#{page.register.confirmpassword.error}">
                 Passwords do not match.
             </span>
         </label>
 
-        <button id="submitBtn" type="submit" disabled>Create account</button>
+        <button id="submitBtn" type="submit" disabled th:text="#{page.register.submit}">
+            Create account
+        </button>
     </form>
 
     <p style="margin-top:.75rem;">
-        Already registered? <a th:href="@{/login}">Log in</a>
+        <span th:text="#{page.register.already}">Already registered?</span>
+        <a th:href="@{/login}" th:text="#{page.register.loginlink}">Log in</a>
     </p>
 </main>
 

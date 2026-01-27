@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Login</title>
+  <title th:text="#{page.login.title}">Login</title>
 
   <style>
     :root { color-scheme: light dark; }
@@ -44,48 +44,77 @@
 
 <body>
 <main>
-  <h1>Login</h1>
-  <p class="muted">Log in to access the secure area.</p>
+
+  <!-- Lang switch -->
+  <nav style="margin:.5rem 0 1rem">
+    <a th:href="@{/login(lang=${'fr'})}">FR</a> |
+    <a th:href="@{/login(lang=${'en'})}">EN</a>
+  </nav>
+
+  <!-- Title & subtitle -->
+  <h1 th:text="#{page.login.title}">Login</h1>
+  <p class="muted" th:text="#{page.login.subtitle}">
+    Log in to access the secure area.
+  </p>
 
   <!-- Status messages -->
-  <div th:if="${param.registered}" class="ok">Registration successful. You can now log in.</div>
-  <div th:if="${param.required}" class="alert">Please log in to access this page.</div>
-  <div th:if="${param.logout}" class="ok">You have been logged out.</div>
-  <div th:if="${loginError}" class="alert" th:text="${loginError}">Invalid email or password.</div>
+  <div th:if="${param.registered}" class="ok" th:text="#{page.login.status.registered}">
+    Registration successful. You can now log in.
+  </div>
 
+  <div th:if="${param.required}" class="alert" th:text="#{page.login.status.required}">
+    Please log in to access this page.
+  </div>
+
+  <div th:if="${param.logout}" class="ok" th:text="#{page.login.status.logout}">
+    You have been logged out.
+  </div>
+
+  <div th:if="${loginError}" class="alert" th:text="#{page.login.status.error}">
+    Invalid email or password.
+  </div>
+
+  <!-- Login form -->
   <form th:action="@{/login}" method="post" th:object="${form}">
-    <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/> -->
 
     <label>
-      Email
-      <input type="email" th:field="*{email}" placeholder="email@domain.com" autocomplete="username" required/>
+      <span th:text="#{page.login.email}">Email</span>
+      <input type="email"
+             th:field="*{email}"
+             th:placeholder="#{page.login.email.placeholder}"
+             autocomplete="username"
+             required/>
     </label>
 
     <label>
-      Password
+      <span th:text="#{page.login.password}">Password</span>
       <div class="input-with-toggle">
         <input id="login-password"
                type="password"
                th:field="*{password}"
-               placeholder="********"
+               th:placeholder="#{page.login.password.placeholder}"
                autocomplete="current-password"
                required/>
         <button type="button"
                 class="pw-toggle"
-                aria-label="Afficher le mot de passe"
+                th:attr="aria-label=#{page.login.password.show},
+                         title=#{page.login.password.show}"
                 aria-pressed="false"
-                title="Afficher le mot de passe"
                 onclick="togglePasswordIcon('login-password', this)">🙈</button>
       </div>
     </label>
 
-    <button type="submit">Log in</button>
+    <button type="submit" th:text="#{page.login.submit}">Log in</button>
   </form>
 
+  <!-- Footer links -->
   <div class="links">
-    <span>Don't have an account?</span>
-    <a th:href="@{/register}">Create an account</a>
+    <span th:text="#{page.login.noaccount}">Don't have an account?</span>
+    <a th:text="#{page.login.createaccount}" th:href="@{/register}">
+      Create an account
+    </a>
   </div>
+
 </main>
 </body>
-</html> 
+</html>
