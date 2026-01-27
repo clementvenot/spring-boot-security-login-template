@@ -25,7 +25,7 @@ public class AuthService {
     	var email = normalizeEmail(dto.email());
     	
         if (repo.existsByEmail(email)) {
-            throw new RuntimeException("Email déjà utilisé");
+            throw new RuntimeException("Email already used");
         }
         User user = new User();
         user.setEmail(email);
@@ -41,19 +41,17 @@ public class AuthService {
     public User login(LoginRequestDTO dto) {
 
         User user = repo.findByEmail(dto.email())
-                .orElseThrow(() -> new RuntimeException("Identifiants incorrects"));
+                .orElseThrow(() -> new RuntimeException("Incorrect credentials"));
 
         if (!encoder.matches(dto.password(), user.getPassword())) {
-            throw new RuntimeException("Identifiants incorrects");
+            throw new RuntimeException("Incorrect credentials");
         }
         return user;
     }
-    
 
 	private String normalizeEmail(String email) {
 	    return email == null ? null : email.trim().toLowerCase();
 	}
-
 }
 
 

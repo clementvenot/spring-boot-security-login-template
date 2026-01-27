@@ -50,18 +50,18 @@ public class JwtCookieAuthFilter extends OncePerRequestFilter {
                         var auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     } else {
-                        logger.debug("Utilisateur introuvable pour l'email dans le token: {}", email);
+                        logger.debug("No user found for email in token: {}", email);
                     }
                 }
             } catch (ExpiredJwtException e) {
                 // Token expire 
-                logger.debug("JWT expiré");
+                logger.debug("Expired JWT");
             } catch (JwtException e) {
                 // token invalid
-                logger.debug("JWT invalide (signature/malformed/issuer/audience)", e);
+                logger.debug("JWT invalid (signature/malformed/issuer/audience)", e);
             } catch (Exception e) {
                 // Prudence 
-                logger.warn("Erreur inattendue pendant l'authentification JWT", e);
+                logger.warn("An unexpected error occurred during JWT authentication", e);
             }
         }
         chain.doFilter(request, response);
