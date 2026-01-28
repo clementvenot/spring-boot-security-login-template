@@ -33,7 +33,7 @@ public class JwtService {
 
     private Key buildKey(String secret) {
         if (secret == null || secret.isBlank()) {
-            throw new IllegalArgumentException("security.jwt.secret manquant");
+            throw new IllegalArgumentException("security.jwt.secret missed");
         }
         // 1) try Base64 
         try {
@@ -47,7 +47,7 @@ public class JwtService {
         // else key text (UTF-8)
         byte[] raw = secret.getBytes(StandardCharsets.UTF_8);
         if (raw.length < 32) {
-            throw new IllegalArgumentException("security.jwt.secret doit faire au moins 32 bytes (256 bits) : augmente la longueur");
+            throw new IllegalArgumentException("security.jwt.secret should do minimum 32 bytes (256 bits)");
         }
         return Keys.hmacShaKeyFor(raw);
     }
