@@ -124,7 +124,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(0)
+                .maxAge(Duration.ZERO)  // delete
                 .sameSite("None")
                 .build();
 
