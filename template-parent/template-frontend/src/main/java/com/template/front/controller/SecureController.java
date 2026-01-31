@@ -11,9 +11,14 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class SecureController {
 
-    @GetMapping({"/", "/secure"})
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/secure";
+    }
+
+    @GetMapping("/secure")
     public String securePage(HttpSession session, Model model) {
-        UserResponseDTO user = (UserResponseDTO) session.getAttribute(WebConfig.SESSION_USER);
+        var user = (UserResponseDTO) session.getAttribute(WebConfig.SESSION_USER);
         model.addAttribute("user", user);
         return "secure";
     }

@@ -49,7 +49,7 @@ public class AuthActionController {
                     .secure(false)  // false for http, true for http
                     .path("/")
                     .maxAge(15 * 60) // 15 min 
-                    .sameSite("None")
+                    .sameSite("Lax") //None for https
                     .build();
             response.addHeader("Set-Cookie", cookie.toString());
 
@@ -96,7 +96,7 @@ public class AuthActionController {
                 .secure(false)
                 .path("/")
                 .maxAge(0)
-                .sameSite("None")
+                .sameSite("Lax") // None for https
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
 
