@@ -1,0 +1,107 @@
+package com.template.service;
+
+import com.template.entity.PasswordResetToken;
+import com.template.entity.User;
+import com.template.repository.PasswordResetTokenRepository;
+import com.template.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Service
+public class ForgotPasswordService {
+
+	private static final Logger log = LoggerFactory.getLogger(ForgotPasswordService.class);
+	
+    private final UserRepository userRepository;
+    private final PasswordResetTokenRepository tokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
+    private final RateLimiterService rateLimiter;
+
+    private static final Duration TOKEN_TTL = Duration.ofMinutes(30);
+
+    public ForgotPasswordService(UserRepository userRepository,
+                                 PasswordResetTokenRepository tokenRepository,
+                                 PasswordEncoder passwordEncoder,
+                                 MailService mailService,
+                                 RateLimiterService rateLimiter) {
+        this.userRepository = userRepository;
+        this.tokenRepository = tokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.mailService = mailService;
+        this.rateLimiter = rateLimiter;
+    }
+
+    public void requestReset(String email, String requesterIp, String frontResetUrlBase) {
+        // Rate limiting
+        boolean ipAllowed = rateLimiter.allowIp(requesterIp);
+        boolean emailAllowed = rateLimiter.allowEmail(email);
+        if (!ipAllowed || !emailAllowed) {
+        	// We do not reveal anything to the client (anti-enumeration), we exit silently
+            return;
+        }
+
+        Optional<User> optUser = userRepository.findByEmail(email);
+        if (optUser.isEmpty()) {
+        	// Anti-disclosure: do not reveal the existence
+            return;
+        }
+
+        User user = optUser.get();
+        String token = generateSecureToken(48); // 48 bytes ~ 64 chars (base64 url)
+        Instant now = Instant.now();
+        Instant expires = now.plus(TOKEN_TTL);
+
+        PasswordResetToken prt = new PasswordResetToken(user, token, now, expires);
+        tokenRepository.save(prt);
+
+        String resetLink = frontResetUrlBase + "?token=" + token;
+        mailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+    }
+
+    public boolean resetPassword(String token, String rawNewPassword) {
+        Optional<PasswordResetToken> opt = tokenRepository.findByToken(token);
+        if (opt.isEmpty()) {
+            log.warn("Reset failed: token not found: {}", token);
+            return false;
+        }
+
+        PasswordResetToken prt = opt.get();
+        log.info("Reset attempt: token={}, createdAt={}, expiresAt={}, usedAt={}",
+                prt.getToken(), prt.getCreatedAt(), prt.getExpiresAt(), prt.getUsedAt());
+
+        if (prt.isUsed()) {
+            log.warn("Reset failed: token already used (usedAt={})", prt.getUsedAt());
+            return false;
+        }
+        if (prt.isExpired()) {
+            log.warn("Reset failed: token expired (now={}, expiresAt={})",
+                    Instant.now(), prt.getExpiresAt());
+            return false;
+        }
+
+        User user = prt.getUser();
+        user.setPassword(passwordEncoder.encode(rawNewPassword));
+        userRepository.save(user);
+
+        prt.setUsedAt(Instant.now());
+        tokenRepository.save(prt);
+
+        return true;
+    }
+
+    private String generateSecureToken(int numBytes) {
+        byte[] bytes = new byte[numBytes];
+        new SecureRandom().nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+}
