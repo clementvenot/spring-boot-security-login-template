@@ -1,55 +1,57 @@
-// src/main/resources/static/js/script_show_pwd.js
-(function () {
-  /**
-   * Toggle password visibility + met à jour icon/ARIA.
-   * inputId: id de l'input
-   * btn: bouton déclencheur (this)
-   * 🙈 (hidden) -> 🙉 (visible)
-   */
-  window.togglePasswordIcon = function (inputId, btn) {
+/** 
+ * Shows/hides the password when clicking the "monkey" button. 
+ * - The button must have a data-target attribute with the id of the input field. 
+ * - Also toggles the icon 🙈 <-> 🐵 and updates aria-pressed. 
+ */
+function togglePasswordIcon(button) {
+    const inputId = button.getAttribute("data-target");
     const input = document.getElementById(inputId);
-    if (!input || !btn) return;
 
-    const isHidden = input.type === 'password';
-    input.type = isHidden ? 'text' : 'password';
+    if (!input) return;
 
-    btn.textContent = isHidden ? '🙉' : '🙈';
-    btn.setAttribute('aria-pressed', String(isHidden));
-    btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-    btn.setAttribute('title', isHidden ? 'Hide password' : 'Show password');
-  };
+    const isHidden = input.type === "password";
 
-  // Validation simple "password === confirmPassword"
-  window.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('register-form');
-    // Si on est sur la page Login, ces éléments n'existent pas : on sort proprement
-    if (!form) return;
+    // Change the input field type
+    input.type = isHidden ? "text" : "password";
 
-    const pwd = document.getElementById('password');
-    const confirm = document.getElementById('confirmPassword');
-    const submitBtn = document.getElementById('submitBtn');
-    const help = document.getElementById('pwdHelp');
+    // Toggle the icon
+    button.textContent = isHidden ? "🐵" : "🙈";
 
-    function checkMatch() {
-      const ok = pwd.value === confirm.value && pwd.value.length > 0;
+    // Accessibility updates
+    button.setAttribute("aria-pressed", isHidden.toString());
+}
 
-      if (!ok) {
-        confirm.setCustomValidity("Passwords do not match");
-        confirm.classList.add("mismatch");
-        confirm.classList.remove("valid");
-        if (help) help.style.display = "block";
-        if (submitBtn) submitBtn.disabled = true;
-      } else {
-        confirm.setCustomValidity("");
-        confirm.classList.remove("mismatch");
-        confirm.classList.add("valid");
-        if (help) help.style.display = "none";
-        if (submitBtn) submitBtn.disabled = !form.checkValidity();
-      }
+// Optional: allows functionality even without inline "onclick".
+// Here we bind the event to all buttons with the .pw-toggle class.
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".pw-toggle").forEach(btn => {
+        // If an onclick attribute is already present, do not add another handler.
+        if (!btn.hasAttribute("onclick")) {
+            btn.addEventListener("click", () => togglePasswordIcon(btn));
+        }
+    });
+
+    // Small bonus: enable/disable the Submit button when passwords match
+    const pwd = document.getElementById("password");
+    const confirm = document.getElementById("confirmPassword");
+    const submitBtn = document.getElementById("submitBtn");
+    const help = document.getElementById("pwdHelp");
+
+    if (pwd && confirm && submitBtn) {
+        const checkMatch = () => {
+            const ok = pwd.value.length > 0 && confirm.value.length > 0 && pwd.value === confirm.value;
+            submitBtn.disabled = !ok;
+
+            if (confirm.value.length > 0) {
+                confirm.classList.toggle("mismatch", !ok);
+                confirm.classList.toggle("valid", ok);
+            } else {
+                confirm.classList.remove("mismatch", "valid");
+            }
+
+            if (help) help.style.display = ok ? "none" : (confirm.value.length ? "block" : "none");
+        };
+        pwd.addEventListener("input", checkMatch);
+        confirm.addEventListener("input", checkMatch);
     }
-
-    pwd.addEventListener("input", checkMatch);
-    confirm.addEventListener("input", checkMatch);
-    checkMatch(); // état initial
-  });
-})();
+});

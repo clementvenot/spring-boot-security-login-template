@@ -21,10 +21,7 @@
         a { color: #2563eb; text-decoration: none; }
         a:hover { text-decoration: underline; }
 
-        .input-with-toggle {
-            position: relative;
-            display: grid;
-        }
+        .input-with-toggle { position: relative; display: grid; }
         .input-with-toggle input { padding-right: 2.4rem; }
         .input-with-toggle button.pw-toggle {
             position: absolute; right: .4rem; top: 50%; transform: translateY(-50%);
@@ -37,6 +34,7 @@
         }
 
         .error-text { color: #b91c1c; font-size: .9rem; display: none; }
+        .hint-text  { color: #6b7280; font-size: .9rem; }
         input:is(:invalid).mismatch { border-color: #ef4444; }
         input.valid { border-color: #16a34a; }
     </style>
@@ -47,7 +45,6 @@
 
 <body>
 <main>
-    <!-- Liens de changement de langue -->
     <nav style="margin:.5rem 0 1rem">
         <a th:href="@{/register(lang=${'fr'})}">FR</a> |
         <a th:href="@{/register(lang=${'en'})}">EN</a>
@@ -59,8 +56,8 @@
     </p>
     
     <div th:if="${registerError}" class="alert" th:text="#{page.login.status.error}">
-			Signup failed (email already used?).  
-	</div>
+        Signup failed (email already used?).  
+    </div>
 
     <form th:action="@{/register}" method="post" th:object="${form}" id="register-form">
 
@@ -99,13 +96,21 @@
                        th:field="*{password}"
                        th:placeholder="#{page.register.password.placeholder}"
                        autocomplete="new-password"
+                       minlength="8"
+                       maxlength="64"
+                       pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,64}$"
+                       title="8–64 caractères, avec au moins 1 majuscule, 1 minuscule, 1 chiffre et 1 symbole"
                        required/>
                 <button type="button"
                         class="pw-toggle"
                         aria-label="Show password"
                         aria-pressed="false"
-                        onclick="togglePasswordIcon('password', this)">🙈</button>
+                        data-target="password"
+                        onclick="togglePasswordIcon(this)">🙈</button>
             </div>
+            <span class="hint-text" th:text="#{page.password.policy.hint}">
+                Minimum 8 characters, include uppercase, lowercase, number, and symbol.
+            </span>
         </label>
 
         <label>
@@ -114,17 +119,23 @@
                 <input id="confirmPassword"
                        name="confirmPassword"
                        type="password"
-                       th:placeholder="#{page.register.confirmpassword.placeholder}"
+					   th:placeholder="#{page.register.password.placeholder}"
                        autocomplete="new-password"
+                       minlength="8"
+                       maxlength="64"
                        required/>
                 <button type="button"
                         class="pw-toggle"
                         aria-label="Show password"
                         aria-pressed="false"
-                        onclick="togglePasswordIcon('confirmPassword', this)">🙈</button>
+                        data-target="confirmPassword"
+                        onclick="togglePasswordIcon(this)">🙈</button>
             </div>
             <span id="pwdHelp" class="error-text" th:text="#{page.register.confirmpassword.error}">
                 Passwords do not match.
+            </span>
+            <span id="policyHelp" class="error-text" th:text="#{page.password.policy.error}">
+                The password must be 8–64 chars and include uppercase, lowercase, number, and symbol.
             </span>
         </label>
 
@@ -138,6 +149,55 @@
         <a th:href="@{/login}" th:text="#{page.register.loginlink}">Log in</a>
     </p>
 </main>
+
+<script>
+  // Validation client (register)
+  const regPwd = document.getElementById('password');
+  const regConfirm = document.getElementById('confirmPassword');
+  const regHelpMismatch = document.getElementById('pwdHelp');
+  const regHelpPolicy = document.getElementById('policyHelp');
+  const regBtn = document.getElementById('submitBtn');
+
+  const POLICY_RE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}$/;
+
+  function validateRegister() {
+    const hasBoth = regPwd.value.length > 0 && regConfirm.value.length > 0;
+    const match = regPwd.value === regConfirm.value;
+    const policyOk = POLICY_RE.test(regPwd.value);
+
+    // show/mask 
+    if (regPwd.value.length > 0 && !policyOk) {
+      regHelpPolicy.style.display = 'block';
+      regPwd.classList.add('mismatch');
+      regPwd.classList.remove('valid');
+    } else {
+      regHelpPolicy.style.display = 'none';
+      regPwd.classList.remove('mismatch');
+      if (policyOk) regPwd.classList.add('valid'); else regPwd.classList.remove('valid');
+    }
+
+    // help mismatch
+    if (hasBoth && !match) {
+      regHelpMismatch.style.display = 'block';
+      regConfirm.classList.add('mismatch');
+      regConfirm.classList.remove('valid');
+    } else if (hasBoth && match) {
+      regHelpMismatch.style.display = 'none';
+      regConfirm.classList.remove('mismatch');
+      if (policyOk) regConfirm.classList.add('valid'); else regConfirm.classList.remove('valid');
+    } else {
+      regHelpMismatch.style.display = 'none';
+      regConfirm.classList.remove('mismatch', 'valid');
+    }
+
+    // Activate button if politic OK + match
+    regBtn.disabled = !(policyOk && match);
+  }
+
+  regPwd.addEventListener('input', validateRegister);
+  regConfirm.addEventListener('input', validateRegister);
+  validateRegister();
+</script>
 
 </body>
 </html>

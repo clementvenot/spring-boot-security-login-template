@@ -22,10 +22,7 @@
     a { color: #2563eb; text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    .input-with-toggle {
-      position: relative;
-      display: grid;
-    }
+    .input-with-toggle { position: relative; display: grid; }
     .input-with-toggle input { padding-right: 2.4rem; }
     .input-with-toggle button.pw-toggle {
       position: absolute; right: .4rem; top: 50%; transform: translateY(-50%);
@@ -35,6 +32,12 @@
     .input-with-toggle button.pw-toggle:hover { background: #f3f4f6; }
     @media (prefers-color-scheme: dark) {
       .input-with-toggle button.pw-toggle:hover { background: #1f2937; }
+    }
+
+    .forgot {
+      margin-top: .25rem;
+      font-size: .92rem;
+      display: inline-block;
     }
   </style>
 
@@ -70,7 +73,17 @@
     You have been logged out.
   </div>
 
-  <div th:if="${loginError}" class="alert" th:text="#{page.login.status.error}">
+  <div th:if="${param.error} or ${loginError}" class="alert" th:text="#{page.login.status.error}">
+    Invalid email or password.
+  </div>
+
+  <!-- Client-side error (hidden by default, same text as server-side) -->
+  <div id="client-pswd-error"
+       class="alert"
+       role="alert"
+       aria-live="assertive"
+       hidden
+       th:text="#{page.login.status.error}">
     Invalid email or password.
   </div>
 
@@ -97,15 +110,22 @@
                required/>
         <button type="button"
                 class="pw-toggle"
+                data-target="login-password"
                 th:attr="aria-label=#{page.login.password.show},
                          title=#{page.login.password.show}"
                 aria-pressed="false"
-                onclick="togglePasswordIcon('login-password', this)">🙈</button>
+                onclick="togglePasswordIcon(this)">🙈</button>
       </div>
     </label>
 
     <button type="submit" th:text="#{page.login.submit}">Log in</button>
   </form>
+  
+  <a class="forgot"
+     th:text="#{page.forgotpwd.title}"
+     th:href="@{/forgot-password}">
+     Forgot your password?
+  </a>
 
   <!-- Footer links -->
   <div class="links">
@@ -116,5 +136,43 @@
   </div>
 
 </main>
+
+<script>
+  (function () {
+    const form = document.querySelector('form[th\\:action="@{/login}"], form[action="/login"]') || document.querySelector('form');
+    const passwordInput = document.getElementById('login-password');
+    const clientError = document.getElementById('client-pswd-error');
+
+    if (!form || !passwordInput || !clientError) return;
+
+    // pattern 
+    const pswdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,64}$/;
+
+    function showClientError() {
+      clientError.hidden = false;
+      clientError.tabIndex = -1;
+      clientError.focus({ preventScroll: true });
+    }
+
+    function hideClientError() {
+      if (!clientError.hidden) clientError.hidden = true;
+    }
+
+    // clean message
+    passwordInput.addEventListener('input', hideClientError);
+
+    form.addEventListener('submit', function (e) {
+      const value = passwordInput.value || '';
+
+      if (pswdRegex.test(value)) {
+        hideClientError();
+        return;
+      }
+
+      e.preventDefault();
+      showClientError();
+    });
+  })();
+</script>
 </body>
 </html>

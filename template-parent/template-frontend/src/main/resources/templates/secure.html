@@ -14,7 +14,7 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         button { padding: .5rem .8rem; font-size: 1rem; border-radius: .5rem; border: 1px solid transparent; background: #ef4444; color: white; cursor: pointer; }
         button:hover { background: #dc2626; }
-        code { background: #f3f4f6; padding: .15rem .35rem; border-radius: .35rem; }
+        code { padding: .15rem .35rem; border-radius: .35rem; }
         a { color: #2563eb; text-decoration: none; }
         a:hover { text-decoration: underline; }
     </style>
@@ -32,8 +32,6 @@
         <h1 th:text="#{page.secure.title}">Secure Area</h1>
 
         <form th:action="@{/logout}" method="post">
-            <!-- CSRF (optionnel si activé côté Spring Security) -->
-            <!-- <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/> -->
             <button type="submit" th:text="#{page.secure.logout}">Log out</button>
         </form>
     </div>
