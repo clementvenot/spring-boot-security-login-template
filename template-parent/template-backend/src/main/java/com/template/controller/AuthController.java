@@ -2,6 +2,9 @@ package com.template.controller;
 
 import com.template.mapper.UserMapper;
 import com.template.service.AuthService;
+import com.template.dto.ForgotPasswordRequestDTO;
+import com.template.service.ForgotPasswordService;
+import com.template.dto.ResetPasswordRequestDTO;
 import com.template.dto.LoginRequestDTO;
 import com.template.dto.RegisterRequestDTO;
 import com.template.dto.UserResponseDTO;
@@ -14,23 +17,37 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Duration;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "Login and logout endpoints")
 public class AuthController {
+	
+	private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService service;
     private final JwtService jwt;
+    private final ForgotPasswordService forgotPasswordService;
+    @Value("${app.front.reset-url}")
+    private String frontResetUrlBase;
 
-    public AuthController(AuthService service, JwtService jwt) {
+ 
+    public AuthController(AuthService service, JwtService jwt, ForgotPasswordService forgotPasswordService) {
         this.service = service;
         this.jwt = jwt;
+        this.forgotPasswordService = forgotPasswordService;
     }
 
     @Operation(
@@ -150,5 +167,37 @@ public class AuthController {
 	    var user = service.register(dto);
 	    return UserMapper.toDTO(user);
 	}
+	
+	
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request,
+                                            HttpServletRequest http) {
+        String ip = extractClientIp(http);
+        forgotPasswordService.requestReset(request.email(), ip, frontResetUrlBase);
+        // Toujours "OK" pour ne pas divulguer la présence de l'email
+        return ResponseEntity.ok("If the email exists, a reset link has been sent.");
+    }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        log.info("Reset request received: token='{}'", request.token());
+        boolean ok = forgotPasswordService.resetPassword(request.token(), request.newPassword());
+        if (!ok) {
+            return ResponseEntity.badRequest().body("Invalid or expired token.");
+        }
+        return ResponseEntity.ok("Password has been reset.");
+    }
+
+    private String extractClientIp(HttpServletRequest request) {
+        // Gestion des proxy
+        String xf = request.getHeader("X-Forwarded-For");
+        if (xf != null && !xf.isBlank()) {
+            return xf.split(",")[0].trim();
+        }
+        String xr = request.getHeader("X-Real-IP");
+        if (xr != null && !xr.isBlank()) {
+            return xr.trim();
+        }
+        return request.getRemoteAddr();
+    }
 }
