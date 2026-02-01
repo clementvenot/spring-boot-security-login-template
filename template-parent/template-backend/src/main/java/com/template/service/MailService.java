@@ -2,9 +2,11 @@ package com.template.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.lang.NonNull;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,71 +19,81 @@ public class MailService {
     private static final Logger log = LoggerFactory.getLogger(MailService.class);
 
     private final JavaMailSender mailSender;
+    private final MessageSource messageSource;
 
     @Value("${app.mail.from}")
     private String from;
 
-    @Value("${app.mail.reset.subject}")
-    private String resetSubject;
-
-    public MailService(JavaMailSender mailSender) {
+    public MailService(JavaMailSender mailSender, MessageSource messageSource) {
         this.mailSender = mailSender;
+        this.messageSource = messageSource;
     }
 
-    public void sendPasswordResetEmail(@NonNull String to, @NonNull String resetLink) {
+    public void sendPasswordResetEmail(@NonNull String to,
+                                       @NonNull String resetLink,
+                                       @NonNull Locale locale) {
         try {
-            MimeMessage msg = mailSender.createMimeMessage();
-            // true -> multipart (text + html), UTF-8 pour les caractères spéciaux
-            MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
+            String subject = msg("mail.reset.subject", locale);
 
-            helper.setFrom(from);
-            helper.setTo(to);
-            helper.setSubject(resetSubject);
-
-            // Plain text fallback
+            // Text
             String plain = """
-                    You requested to reset your password.
-                    Click the link below to set a new password (valid for a limited time):
+                    %s
+                    %s (%s):
                     %s
 
-                    If you did not request this, you can ignore this email.
-                    """.formatted(resetLink);
+                    %s
+                    """.formatted(
+                    msg("mail.reset.title", locale),
+                    msg("mail.reset.cta", locale),
+                    msg("mail.reset.validity", locale),
+                    resetLink,
+                    msg("mail.reset.ignore", locale)
+            );
 
-            // Proper HTML (no HTML entities)
+            // HTML 
             String html = """
-                    <html>
-                      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-                        <p>You requested to reset your password.</p>
-                        <p>
-                          Click the button below to set a new password
-                          (valid for a limited time):
-                        </p>
-                        <p style="margin: 20px 0;">
-                          <a href="%s"
-                             style="background: #4f46e5; color: #fff; padding: 10px 16px; text-decoration: none;
-                                    border-radius: 6px; display: inline-block;">
-                            Reset password
-                          </a>
-                        </p>
-                        <p>If the button does not work, copy this link into your browser:</p>
-                        <p><a href="%s">%s</a></p>
-                        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;"/>
-                        <p style="color: #666; font-size: 12px;">
-                          If you did not request this, you can ignore this email.
-                        </p>
-                      </body>
-                    </html>
-                    """.formatted(resetLink, resetLink, resetLink);
+                <html>
+                  <body style="font-family: Arial, sans-serif; line-height:1.6; color:#111;">
+                    <p>%s</p>
+                    <p>%s (<em>%s</em>):</p>
+                    <p style="margin:20px 0;">
+                      <a href="%s"
+                         style="background:#4f46e5;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px;display:inline-block;">
+                        %s
+                      </a>
+                    </p>
+                    <p>%s</p>
+                    <p><a href="%s">%s</a></p>
+                    <hr style="border:none;border-top:1px solid #eee;margin:24px 0;"/>
+                    <p style="color:#666;font-size:12px;">%s</p>
+                  </body>
+                </html>
+                """.formatted(
+                    msg("mail.reset.title", locale),
+                    msg("mail.reset.cta", locale),
+                    msg("mail.reset.validity", locale),
+                    resetLink,
+                    msg("mail.reset.cta", locale),
+                    msg("mail.reset.copyLink", locale),
+                    resetLink, resetLink,
+                    msg("mail.reset.ignore", locale)
+            );
 
-            // Envoie multipart (texte + HTML). Le 2e argument est considéré comme HTML.
+            MimeMessage mime = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mime, true, "UTF-8");
+            helper.setFrom(from);
+            helper.setTo(to);
+            helper.setSubject(subject);
             helper.setText(plain, html);
-            mailSender.send(msg);
 
-            log.info("Password reset email sent to {}", to);
+            mailSender.send(mime);
+            log.info("Password reset email sent to {} with locale {}", to, locale);
         } catch (MessagingException | MailException e) {
             log.error("Failed to send password reset email to {}: {}", to, e.getMessage(), e);
-            // Ici on log et on n’arrête pas le flux forgot-password côté API (anti-enumération).
-            // Tu peux choisir de remonter une exception si tu veux un monitoring plus strict.
         }
+    }
+
+    private String msg(String key, Locale locale) {
+        return messageSource.getMessage(key, null, locale);
     }
 }

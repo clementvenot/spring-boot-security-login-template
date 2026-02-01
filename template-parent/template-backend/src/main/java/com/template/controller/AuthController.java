@@ -222,10 +222,11 @@ public class AuthController {
     )
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request,
-                                            HttpServletRequest http) {
+                                            HttpServletRequest http,
+                                            java.util.Locale locale) {
         String ip = extractClientIp(http);
-        forgotPasswordService.requestReset(request.email(), ip, frontResetUrlBase);
-        // Anti-disclosure: always return OK to avoid revealing whether the email exists
+        // on passe la locale au service
+        forgotPasswordService.requestReset(request.email(), ip, frontResetUrlBase, locale);
         return ResponseEntity.ok("If the email exists, a reset link has been sent.");
     }
 

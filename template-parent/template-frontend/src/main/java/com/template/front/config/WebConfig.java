@@ -2,12 +2,15 @@ package com.template.front.config;
 
 import com.template.front.web.LoginRequiredInterceptor;
 import java.time.Duration;
+import java.util.List;
 import java.util.Locale;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -21,13 +24,26 @@ public class WebConfig implements WebMvcConfigurer {
     public static final String SESSION_JWT = "ACCESS_TOKEN";
     public static final String SESSION_USER = "CURRENT_USER";
 
-    // Make this configurable if possible (false for HTTP in dev, true for HTTPS in production)
+    // false for HTTP in dev, true for HTTPS in production)
     @Value("${app.cookies.secure:false}")
     private boolean cookiesSecure;
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate rt = new RestTemplate();
+        rt.setInterceptors(List.of(acceptLanguageForwardingInterceptor()));
+        return rt;
+    }
+
+    @Bean
+    public ClientHttpRequestInterceptor acceptLanguageForwardingInterceptor() {
+        return (request, body, execution) -> {
+            Locale locale = org.springframework.context.i18n.LocaleContextHolder.getLocale();
+            if (locale != null) {
+                request.getHeaders().setAcceptLanguageAsLocales(List.of(locale));
+            }
+            return execution.execute(request, body);
+        };
     }
 
     @Override
