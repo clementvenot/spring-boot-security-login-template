@@ -17,8 +17,19 @@ public class I18nConfigBackend extends AcceptHeaderLocaleResolver {
     @Override
     public Locale resolveLocale(HttpServletRequest request) {
         String header = request.getHeader("Accept-Language");
-        if (header == null || header.isBlank()) return Locale.ENGLISH;
-        return Locale.lookup(Locale.LanguageRange.parse(header), SUPPORTED);
+
+        if (header == null || header.isBlank()) {
+            return Locale.FRENCH;
+        }
+        Locale matched = Locale.lookup(Locale.LanguageRange.parse(header), SUPPORTED);
+        if (matched != null) {
+            return matched;
+        }
+        String lower = header.toLowerCase();
+        if (lower.startsWith("fr")) {
+            return Locale.FRENCH;
+        }
+        return Locale.ENGLISH;
     }
 
     @Bean
